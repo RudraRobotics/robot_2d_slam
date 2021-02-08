@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- Arguments -->
+  <arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
+  <arg name="slam_methods" default="hector" doc="slam type [gmapping, cartographer, hector, karto, frontier_exploration]"/>
+  <arg name="configuration_basename" default="turtlebot3_lds_2d.lua"/>
+  <arg name="simulation" default="false"/>
+
+  <!-- TurtleBot3 -->
+  <include file="$(find turtlebot3_bringup)/launch/turtlebot3_remote.launch">
+    <arg name="model" value="$(arg model)" />
+  </include>
+
+  <group if="$(arg simulation)">
+    <include file="$(find turtlebot3_gazebo)/launch/turtlebot3_world.launch"/>
+  </group>
+
+  <group unless="$(arg simulation)" >
+	  <include file="$(find realsense2_camera)/launch/rs_camera.launch"/>
+	  <include file="$(find medicbot_control)/launch/medicbot_diff_drive_controller.launch"/>
+	  <include file="$(find rplidar_ros)/launch/rplidar.launch"/>
+  </group>
+
+  <include file="$(find turtlebot3_navigation)/launch/rplidar_filter.launch"/>
+  <!-- Robot localization ekf node -->
+  <!--include file="$(find turtlebot3_localization)/launch/turtlebot3_ekf.launch"/-->
+
+  <!-- SLAM: Gmapping, Cartographer, Hector, Karto, Frontier_exploration, RTAB-Map -->
+  <include file="$(find robot_2d_slam)/launch/robot_$(arg slam_methods).launch">
+    <arg name="model" value="$(arg model)"/>
+    <arg name="configuration_basename" value="$(arg configuration_basename)"/>
+  </include>
+
+</launch>
